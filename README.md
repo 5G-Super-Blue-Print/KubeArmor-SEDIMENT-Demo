@@ -33,8 +33,10 @@ KubeArmor can be used to apply security postures at the kernel-level (using LSMs
 ### System Requirement
 
 This guide assumes all the workloads will run on Ubuntu 22.04.
+
 Firstly we need to deploy Sediment Containers, we have a pre-built docker container image for SEDIMENT and 
 a shell convenience script `start.sh` to configure and initiate the containers.
+
 Run each of the following commands in a separate terminal to initiate the containers.
 
         $ ./start.sh -c firewall
@@ -116,20 +118,20 @@ sudo journalctl -u knoxAutoPolicy -f
 
 * **Policy Enforecement:**
 
-- To see alerts on policy violation, run on seprate terminal:
+To see alerts on policy violation, run `logs` command on seprate terminal:
 
 ```
 karmor logs --gRPC=:32767
 ```
 
-- Now, let’s apply a sample policy: *block-secrets-access.yaml* using:
+Now, let’s apply a sample policy: *block-secrets-access.yaml* using:
 
 ```
 karmor vm policy add block-secrets-access.yaml
 ```
 
-<details>
-<summary>block-secrets-access.yaml</summary>
+
+*block-secrets-access.yaml*
 
 ```yaml
 apiVersion: security.kubearmor.com/v1
@@ -156,12 +158,11 @@ spec:
   action:
     Block
 ```
-</details>
 
 Here notice the field `kubearmor.io/container.name: sediment_firewall` sediment_firewall is the container name to which we want to apply the policy.
 
 <details>
-<summary>karmor log</summary>
+<summary>karmor logs</summary>
 
 ```yaml
 HostName: ip-172-31-0-78
@@ -204,6 +205,7 @@ Tags: MITRE,MITRE_T1552_unsecured_credentials,FGT1555,5G
 This will create an apparmor profile at `/etc/apparmor.d/` with the name `kubearmor_<containername>` (kubearmor_sediment_firewall here) and will load the profile to apparmor.
  
 #### Apply the apparmor profile to the desired container
+
 To run a container with KubeArmor enforcement using the apparmor profile kubearmor_sediment_firewall, pass `--security-opt apparmor=kubearmor_sediment_firewall` with the `docker run` command or if using docker-compose add:`security_opts: apparmor=kubearmor_sediment_firewall` under the container name in the docker-compose.yaml.
 
 * **KubeTLS Installation:**
