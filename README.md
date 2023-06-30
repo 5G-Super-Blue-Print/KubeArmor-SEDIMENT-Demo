@@ -18,7 +18,7 @@ KubeArmor is a runtime security enforcement system that restricts the behavior (
 
 KubeArmor provides container-aware observability information about the operations happening from host to containers, between the containers and inside the containers.
 
-Observability data contains information for :
+Observability data contains information about :
 
 1) Processes Spawned
 2) File accessed by the processes
@@ -28,16 +28,15 @@ Observability data contains information for :
 
 KubeArmor can be used to apply security postures at the kernel-level (using LSMs like AppArmor, BPF-LSM). It can protect both the host and workloads running on it by enforcing either some predefined security policies or automatically generated least permissive security policies (using Discovery Engine).
 
-## KubeArmor on Sediment
+# KubeArmor on Sediment
 
-# System Requirement
+## System Requirement
 
-Host - ubuntu 22.04
-This guide assumes all the essential Sediment Docker Containers(firewall, verifier, app_server, prover) are running.
+This guide assumes all the essential Sediment Docker Containers(firewall, verifier, app_server, prover) are running on Ubuntu 22.04.
 
-Now we will run KubeArmor as a systemd process.
+Next we will run KubeArmor as a systemd process.
 
-# Installation KubeArmor, kArmor and Discovery Engine
+## Installation KubeArmor, kArmor and Discovery Engine
 
 * **KubeArmor Installation:**
 
@@ -106,14 +105,18 @@ If you have previously installed discovery-engine, it's adviced to restart the s
 ```
 sudo journalctl -u knoxAutoPolicy -f
 ```
+* **KubeTLS Installation:**
 
-5. To see alerts on policy violation, run:
+
+* **Policy Enforecement:**
+
+* To see alerts on policy violation, run:
 
 ```
 karmor logs
 ```
 
-6. Now, let’s apply a sample policy: *block-secrets-access.yaml* using:
+* Now, let’s apply a sample policy: *block-secrets-access.yaml* using:
 
 ```
 karmor vm policy add block-secrets-access.yaml
@@ -195,15 +198,15 @@ Tags: MITRE,MITRE_T1552_unsecured_credentials,FGT1555,5G
 </details>
 
 
-This will create an apparmor profile at `/etc/apparmor.d/` with the name `kubearmor_<containername>` (kubearmor_homeassistant here) and will load the profile to apparmor.
+This will create an apparmor profile at `/etc/apparmor.d/` with the name `kubearmor_<containername>` (kubearmor_sediment_firewall here) and will load the profile to apparmor.
  
 ### Apply the apparmor profile to the desired container
-To run a container with KubeArmor enforcement using the apparmor profile kubearmor_homeassistant, pass `--security-opt apparmor=kubearmor_homeassistant` with the `docker run` command or if using docker-compose add:`security_opts: apparmor=kubearmor_homeassistant` under the container name in the docker-compose.yaml.
+To run a container with KubeArmor enforcement using the apparmor profile kubearmor_sediment_firewall, pass `--security-opt apparmor=kubearmor_sediment_firewall` with the `docker run` command or if using docker-compose add:`security_opts: apparmor=kubearmor_sediment_firewall` under the container name in the docker-compose.yaml.
 
 * **KubeTLS Installation:**
 
 
-# Observability
+## Observability
 
 To get Observability data, run:
 
@@ -217,7 +220,7 @@ This will provide full observability for hosts as well as containers.
 * To get Observabilty for spcific type such as process, file or network, use `--type` flag.
 
 <details>
-<summary>❯ karmor summary --gRPC=:9089 --container sediment_firewall --agg</summary>
+<summary>karmor summary --gRPC=:9089 --container sediment_firewall --agg</summary>
 
 ```
   Pod Name        sediment_firewall    
@@ -295,10 +298,10 @@ Flags:
 ```
 </details>
 
-# KubeTLS
+## KubeTLS
 
 
-# Recommend Policies
+## Recommend Policies
 
 KubeAmror provides a set of hardening policies that are based on industry-leading compliance and attack frameworks such as CIS, MITRE, NIST-800-53, and STIGs. These policies are designed to help you secure your workloads in a way that is compliant with these frameworks and recommended best practices.
 
@@ -409,7 +412,7 @@ output report in out/report.txt ...
 
 ```
 </details>
-Some of the harden policies generated:
+Some of the harden policies generated are:
 
 1) Restrict access to trusted cert bundles in the OS, prevents unauthorized updates to root certs
 2) Restrict access to maintenance tools such as apk, mii-tool
@@ -422,7 +425,7 @@ Some of the harden policies generated:
 ```
 karmor discover --gRPC=:9089 --format yaml --labels "kubearmor.io/container.name=sediment_verifier" > discovered_policy.yaml
 ```
-This yaml file can be applied to KubeArmor to provide least permissive security posture for the homeassistant-service container.  
+This yaml file can be applied to KubeArmor to provide least permissive security posture for the sediment_firewall-service container.  
 
 To apply security policy `discovered_policy.yaml`  
 
