@@ -427,6 +427,37 @@ karmor discover --gRPC=:9089 --format yaml --labels "kubearmor.io/container.name
 ```
 This yaml file can be applied to KubeArmor to provide least permissive security posture for the sediment_firewall-service container.  
 
+<details>
+<summary>discovered_policy.yaml</summary>
+
+```
+apiVersion: security.kubearmor.com/v1
+kind: KubeArmorPolicy
+metadata:
+  name: autopol-system-165939104
+  namespace: container_namespace
+spec:
+  action: Allow
+  file:
+    matchDirectories:
+    - dir: /
+      recursive: true
+    - dir: /lib/x86_64-linux-gnu/
+      recursive: true
+    matchPaths:
+    - path: /home/sediment/build/verifier
+      readOnly: true
+  process:
+    matchPaths:
+    - path: /home/sediment/build/verifier
+  selector:
+    matchLabels:
+      kubearmor.io/container.name: sediment_verifier
+  severity: 1
+
+```
+</details>
+
 To apply security policy `discovered_policy.yaml`  
 
 ```
