@@ -208,8 +208,6 @@ This will create an apparmor profile at `/etc/apparmor.d/` with the name `kubear
 
 To run a container with KubeArmor enforcement using the apparmor profile kubearmor_sediment_firewall, pass `--security-opt apparmor=kubearmor_sediment_firewall` with the `docker run` command or if using docker-compose add:`security_opts: apparmor=kubearmor_sediment_firewall` under the container name in the docker-compose.yaml.
 
-* **KubeTLS Installation:**
-
 
 ### Observability
 
@@ -307,9 +305,9 @@ Bind Points
 
 ### Recommend Policies
 
-KubeAmror provides a set of hardening policies that are based on industry-leading compliance and attack frameworks such as CIS, MITRE, NIST-800-53, and STIGs. These policies are designed to help you secure your workloads in a way that is compliant with these frameworks and recommended best practices.
+KubeAmror provides a set of hardening policies that are based on industry-leading compliance and attack frameworks such as CIS, MITRE, NIST-800-53, and STIGs. These policies are designed to help us secure our workloads in a way that is compliant with these frameworks and recommended best practices.
 
-We can get these harden policies using container image.
+We can get these harden policies using `karmor recommend` tool provided with container image.
 ```
 karmor recommend -i sediment:demo
 ```
@@ -421,7 +419,9 @@ Some of the harden policies generated are:
 1) Restrict access to trusted cert bundles in the OS, prevents unauthorized updates to root certs
 2) Restrict access to maintenance tools such as apk, mii-tool
 
-These generated harden policies can be directly applied for enforcement. To apply one such generated harden policy `maint-tools-access.yaml`
+These generated harden policies can be directly applied for enforcement. 
+
+To apply one such generated harden policy `maint-tools-access.yaml`
 
 <details>
 <summary>maint-tools-access.yaml</summary>
