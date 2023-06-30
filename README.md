@@ -28,15 +28,23 @@ Observability data contains information about :
 
 KubeArmor can be used to apply security postures at the kernel-level (using LSMs like AppArmor, BPF-LSM). It can protect both the host and workloads running on it by enforcing either some predefined security policies or automatically generated least permissive security policies (using Discovery Engine).
 
-# KubeArmor on Sediment
+## KubeArmor on Sediment
 
-## System Requirement
+### System Requirement
 
-This guide assumes all the essential Sediment Docker Containers(firewall, verifier, app_server, prover) are running on Ubuntu 22.04.
+This guide assumes all the workloads will run on Ubuntu 22.04.
+Firstly we need to deploy Sediment Containers, we have a pre-built docker container image for SEDIMENT and 
+a shell convenience script `start.sh` to configure and initiate the containers.
+Run each of the following commands in a separate terminal to initiate the containers.
 
-Next we will run KubeArmor as a systemd process.
+        $ ./start.sh -c firewall
+        $ ./start.sh -c verifier
+        $ ./start.sh -c app_server
+        $ ./start.sh -c prover         
 
-## Installation KubeArmor, kArmor and Discovery Engine
+Next we will run Sediment Containers & KubeArmor as a systemd process.
+
+### Installation KubeArmor, kArmor and Discovery Engine
 
 * **KubeArmor Installation:**
 
@@ -65,8 +73,6 @@ sudo systemctl start kubearmor
 ```
 sudo journalctl -u kubearmor -f
 ```
-
-
 
 * **kArmor Installation:**
 
@@ -106,17 +112,17 @@ If you have previously installed discovery-engine, it's adviced to restart the s
 sudo journalctl -u knoxAutoPolicy -f
 ```
 * **KubeTLS Installation:**
-
+??
 
 * **Policy Enforecement:**
 
-* To see alerts on policy violation, run:
+- To see alerts on policy violation, run on seprate terminal:
 
 ```
-karmor logs
+karmor logs --gRPC=:32767
 ```
 
-* Now, let’s apply a sample policy: *block-secrets-access.yaml* using:
+- Now, let’s apply a sample policy: *block-secrets-access.yaml* using:
 
 ```
 karmor vm policy add block-secrets-access.yaml
@@ -183,7 +189,6 @@ ParentProcessName: /usr/bin/bash
 ProcessName: /usr/bin/touch
 Tags: MITRE,MITRE_T1552_unsecured_credentials,FGT1555,5G
 ```
-
 <details>
 <summary>Available filters</summary>
 
@@ -194,19 +199,17 @@ Tags: MITRE,MITRE_T1552_unsecured_credentials,FGT1555,5G
 --container - Specify container name to view container specific logs
 ```
 </details>
-
 </details>
-
 
 This will create an apparmor profile at `/etc/apparmor.d/` with the name `kubearmor_<containername>` (kubearmor_sediment_firewall here) and will load the profile to apparmor.
  
-### Apply the apparmor profile to the desired container
+#### Apply the apparmor profile to the desired container
 To run a container with KubeArmor enforcement using the apparmor profile kubearmor_sediment_firewall, pass `--security-opt apparmor=kubearmor_sediment_firewall` with the `docker run` command or if using docker-compose add:`security_opts: apparmor=kubearmor_sediment_firewall` under the container name in the docker-compose.yaml.
 
 * **KubeTLS Installation:**
 
 
-## Observability
+### Observability
 
 To get Observability data, run:
 
@@ -278,30 +281,29 @@ Bind Points
 | AF_NETLINK | /home/sediment/build/firewall |           |              | 2     | Fri Jun 30 12:10:26 UTC 2023 |
 +------------+-------------------------------+-----------+--------------+-------+------------------------------+
 ```
-</details>
+
 <details>
 <summary>Available filters</summary>
 
 ```
-Flags:
-      --agg                Aggregate destination files/folder path
-      --cluster string     Cluster name
-      --container string   Container name
-      --gRPC string        gRPC server information
-  -h, --help               help for summary
-  -l, --labels string      Labels
-  -n, --namespace string   Namespace
-  -o, --output string      Export Summary Data in JSON (karmor summary -o json)
-  -p, --pod string         PodName
-      --rev-dns-lookup     Reverse DNS Lookup
-  -t, --type string        Summary filter type : process|file|network  (default "process,file,network")
+--agg                Aggregate destination files/folder path
+--container string   Container name
+--gRPC string        gRPC server information
+-l, --labels string      Labels
+-n, --namespace string   Namespace
+-o, --output string      Export Summary Data in JSON (karmor summary -o json)
+-p, --pod string         PodName
+-t, --type string        Summary filter type : process|file|network  (default "process,file,network")
 ```
 </details>
 
-## KubeTLS
+</details>
 
 
-## Recommend Policies
+### KubeTLS
+??
+
+### Recommend Policies
 
 KubeAmror provides a set of hardening policies that are based on industry-leading compliance and attack frameworks such as CIS, MITRE, NIST-800-53, and STIGs. These policies are designed to help you secure your workloads in a way that is compliant with these frameworks and recommended best practices.
 
@@ -417,9 +419,41 @@ Some of the harden policies generated are:
 1) Restrict access to trusted cert bundles in the OS, prevents unauthorized updates to root certs
 2) Restrict access to maintenance tools such as apk, mii-tool
 
+These generated harden policies can be directly applied for enforcement. To apply one such generated harden policy `maint-tools-access.yaml`
+
+<details>
+<summary>maint-tools-access.yaml</summary>
+
+```
+apiVersion: security.kubearmor.com/v1
+kind: KubeArmorPolicy
+metadata:
+  name: sediment-demo-maint-tools-access
+spec:
+  action: Audit
+  message: restricted maintenance tool access attempt detected
+  process:
+    matchDirectories:
+    - dir: /sbin/
+      recursive: true
+  selector:
+    matchLabels:
+      kubearmor.io/container.name: sediment
+  severity: 1
+  tags:
+  - PCI_DSS
+  - MITRE
+
+```
+</details>
+
+```
+karmor vm policy add maint-tools-access.yaml
+```
+> **Note**: label `kubearmor.io/container.name` value is image name, therfore update the value for label to the container name before applying policy.
 
 
-## Auto discover least permissive security policy
+### Auto discover least permissive security policy
 
 `karmor discover` tool can be used to automatically generate security policies. The output of the command can be redirected to a yaml file
 ```
