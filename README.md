@@ -46,6 +46,8 @@ Run each of the following commands in a separate terminal to initiate the contai
 
 Next we will run Sediment Containers & KubeArmor as a systemd process.
 
+> You will find detailed documentation for running sediment containers in sediment folder. It also contains required container image. 
+
 ### Installation KubeArmor, kArmor and Discovery Engine
 
 * **KubeArmor Installation:**
@@ -113,8 +115,6 @@ If you have previously installed discovery-engine, it's adviced to restart the s
 ```
 sudo journalctl -u knoxAutoPolicy -f
 ```
-* **KubeTLS Installation:**
-??
 
 * **Policy Enforecement:**
 
@@ -298,10 +298,6 @@ Bind Points
 </details>
 
 </details>
-
-
-### KubeTLS
-??
 
 ### Recommend Policies
 
